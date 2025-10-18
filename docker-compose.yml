@@ -1,0 +1,41 @@
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: hr-mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: hrdb
+      MYSQL_USER: hr
+      MYSQL_PASSWORD: hrpw
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-proot" ]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./infra/db/init:/docker-entrypoint-initdb.d:ro
+      - mysql_data:/var/lib/mysql
+
+  hr-backend:
+    build:
+      context: ./hr-backend
+      dockerfile: Dockerfile
+    container_name: hr-backend
+    restart: always
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      JAVA_OPTS: "-Dcom.sun.management.jmxremote=false"
+      SPRING_PROFILES_ACTIVE: docker
+      DB_URL: jdbc:mysql://mysql:3306/hrdb?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      DB_USER: hr
+      DB_PASS: hrpw
+    ports:
+      - "8082:8080"
+
+volumes:
+  mysql_data:
