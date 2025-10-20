@@ -46,6 +46,11 @@ public class EmployeeService {
     }
 
     @Transactional public Page<EmployeeResponse> list(String q, Pageable pageable) {
-        return repo.findAll(EmployeeSpecifications.search(q), pageable).map(EmployeeMapper::toResponse);
+
+        Page<Employee> result = repo.findAll(EmployeeSpecifications.search(q), pageable);
+        Page<EmployeeResponse> mapped = result.map(EmployeeMapper::toResponse);
+        return mapped;
+
+        //return repo.findAll(EmployeeSpecifications.search(q), pageable).map(EmployeeMapper::toResponse);
     }
 }

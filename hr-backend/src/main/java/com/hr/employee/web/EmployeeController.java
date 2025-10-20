@@ -38,6 +38,7 @@ public class EmployeeController {
         Sort s = Sort.by(sort.split(",")[0]);
         s = sort.endsWith(",asc") ? s.ascending() : s.descending();
         Pageable pageable = PageRequest.of(page, size, s);
-        return service.list(q, pageable);
+        Page<EmployeeResponse> employeeResponsePage = service.list(q, pageable);
+        return employeeResponsePage;
     }
 }
