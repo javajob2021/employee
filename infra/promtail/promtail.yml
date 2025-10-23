@@ -1,0 +1,27 @@
+server:
+  http_listen_port: 9080
+  grpc_listen_port: 0
+
+positions:
+  filename: /tmp/positions.yaml
+
+clients:
+  - url: http://loki:3100/loki/api/v1/push
+    # Keep or drop tenant_id depending on your Loki auth mode:
+    # - If auth_enabled: true in Loki -> set a tenant_id that matches what Grafana uses
+    # - If auth_enabled: false       -> either omit tenant_id or any value is ignored
+    tenant_id: hr
+
+scrape_configs:
+  - job_name: docker-logs
+    docker_sd_configs:
+      - host: "unix:///var/run/docker.sock"
+        
+    relabel_configs:
+      # --- Step 1: Label EVERY stream (runs first) ---
+      # This finds the compose service label (like 'hr-backend', 'loki', etc.)
+      # and copies its value to a new, permanent label called 'app'.
+      - source_labels: ['__meta_docker_container_label_com_docker_compose_service']
+        target_label: 'app'
+        
+     

@@ -1,0 +1,47 @@
+apiVersion: 1
+
+deleteDatasources:
+  - name: Prometheus
+    orgId: 1
+  - name: Loki
+    orgId: 1
+
+datasources:
+  # -------------------------------
+  # ✅ Prometheus — Metrics source
+  # -------------------------------
+  - name: Prometheus
+    type: prometheus
+    access: proxy
+    orgId: 1
+    url: http://prometheus:9090
+    isDefault: true
+    editable: true
+    jsonData:
+      httpMethod: GET
+      manageAlerts: true
+      exemplarTraceIdDestinations:
+        - datasourceUid: Loki
+          name: traceID
+      prometheusType: Prometheus
+      prometheusVersion: 2.52.0
+      timeInterval: 5s
+
+  # -------------------------------
+  # ✅ Loki — Logs source
+  # -------------------------------
+  - name: Loki
+    type: loki
+    access: proxy
+    orgId: 1
+    url: http://loki:3100
+    editable: true
+    jsonData:
+      httpHeaderName1: "X-Scope-OrgID"
+      derivedFields:
+        - name: traceID
+          matcherRegex: "traceID=(\\w+)"
+          url: "$${__value.raw}"
+          datasourceUid: Prometheus
+    secureJsonData:
+      httpHeaderValue1: "fake"

@@ -1,0 +1,43 @@
+server:
+  http_listen_port: 9080
+  grpc_listen_port: 0
+
+positions:
+  filename: /tmp/positions.yaml
+
+clients:
+  - url: http://loki:3100/loki/api/v1/push
+    tenant_id: fake
+
+scrape_configs:
+  # Discover Docker containers via the Docker API
+  - job_name: docker
+    docker_sd_configs:
+      - host: unix:///var/run/docker.sock
+        refresh_interval: 5s
+    # In promtail-config.yml
+    relabel_configs:
+      # Keep only running containers
+      - source_labels: [__meta_docker_container_state]
+        regex: running
+        action: keep
+
+      # Drop the promtail container itself
+      - source_labels: [__meta_docker_container_label_com_docker_compose_service]
+        regex: promtail
+        action: drop
+
+      # Create a 'job' label from the default compose service name
+      - source_labels: [__meta_docker_container_label_com_docker_compose_service]
+        target_label: job
+        
+      # Create a 'project' label from the default compose project name
+      - source_labels: [__meta_docker_container_label_com_docker_compose_project]
+        target_label: project
+
+      # Set the path to the container's log file
+      - source_labels: [__meta_docker_container_id]
+        target_label: __path__
+        replacement: /var/lib/docker/containers/$1/*-json.log
+    pipeline_stages:
+      - docker: {}  # parse Docker JSON log payload

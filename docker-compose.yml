@@ -1,4 +1,7 @@
 services:
+  # ------------------------------
+  # MySQL
+  # ------------------------------
   mysql:
     image: mysql:8.0
     container_name: hr-mysql
@@ -18,7 +21,11 @@ services:
     volumes:
       - ./infra/db/init:/docker-entrypoint-initdb.d:ro
       - mysql_data:/var/lib/mysql
+    networks: [app]
 
+  # ------------------------------
+  # Spring Boot backend
+  # ------------------------------
   hr-backend:
     container_name: hr-backend
     build:
@@ -33,7 +40,7 @@ services:
       DB_URL: jdbc:mysql://mysql:3306/hrdb?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
       DB_USER: hr
       DB_PASS: hrpw
-    # expose backend to host on 8082 (container listens on 8080)
+    # container listens on 8080; expose host 8082
     ports:
       - "8082:8080"
     healthcheck:
@@ -41,7 +48,15 @@ services:
       interval: 5s
       timeout: 3s
       retries: 20
+    # add labels so Promtail/Grafana have nice dimensions
+    labels:
+      compose_service: hr-backend
+      project: employee
+    networks: [app, monitoring]
 
+  # ------------------------------
+  # Angular frontend (Nginx)
+  # ------------------------------
   hr-frontend:
     container_name: hr-frontend
     build:
@@ -51,7 +66,6 @@ services:
     depends_on:
       hr-backend:
         condition: service_healthy
-    # expose frontend to host on 8083
     ports:
       - "8083:80"
     healthcheck:
@@ -59,6 +73,93 @@ services:
       interval: 10s
       timeout: 5s
       retries: 10
+    labels:
+      compose_service: hr-frontend
+      project: employee
+    networks: [app]
+
+  # ------------------------------
+  # Prometheus
+  # ------------------------------
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    restart: always
+    depends_on:
+      - hr-backend
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./infra/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    networks: [monitoring]
+
+  # ------------------------------
+  # Grafana
+  # ------------------------------
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    restart: always
+    depends_on:
+      - prometheus
+      - loki
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./infra/grafana/provisioning/datasources:/etc/grafana/provisioning/datasources:ro
+      - ./infra/grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./infra/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    networks: [monitoring]
+
+  # ------------------------------
+  # Loki (single-node / memberlist, no Consul)
+  # ------------------------------
+  loki:
+    image: grafana/loki:2.9.8
+    container_name: loki
+    command: -config.file=/etc/loki/config.yml
+    ports:
+      - "3100:3100"
+    volumes:
+      - ./infra/loki/config.yml:/etc/loki/config.yml:ro   # <- use memberlist config
+      - loki_data:/loki
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3100/ready"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    restart: always
+    networks: [monitoring]
+
+  # ------------------------------
+  # Promtail (collect Docker logs)
+  # ------------------------------
+  promtail:
+    image: grafana/promtail:2.9.8
+    container_name: promtail
+    restart: always
+    depends_on:
+      - loki
+    ports:
+      - "9080:9080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro  # <-- add this
+      - ./infra/promtail/promtail.yml:/etc/promtail/promtail.yml:ro
+    command: -config.file=/etc/promtail/promtail.yml
+    networks: [monitoring]
+
+networks:
+  app:
+    driver: bridge
+  monitoring:
+    driver: bridge
 
 volumes:
   mysql_data:
+  grafana_data:
+  loki_data:
