@@ -1,0 +1,22 @@
+# k8s/hr-backend/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hr-backend
+  namespace: hr-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hr-backend
+  template:
+    metadata:
+      labels:
+        app: hr-backend
+    spec:
+      containers:
+        - name: hr-backend
+          image: hr-backend:0.1.0
+          imagePullPolicy: IfNotPresent   # important for local images
+          ports:
+            - containerPort: 8080
