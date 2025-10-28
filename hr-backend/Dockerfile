@@ -45,7 +45,6 @@ USER ${APP_USER}
 
 # environment defaults (can be overridden in docker-compose or env)
 ENV JAVA_OPTS=""
-ENV SPRING_PROFILES_ACTIVE=docker
 ENV SERVER_PORT=8080
 
 EXPOSE 8080

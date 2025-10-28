@@ -1,0 +1,18 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: hr-backend-monitor
+  namespace: monitoring
+  labels:
+    release: kps   # must match the release name of your kube-prometheus-stack
+spec:
+  namespaceSelector:
+    matchNames:
+      - hr-system
+  selector:
+    matchLabels:
+      app: hr-backend
+  endpoints:
+    - port: http
+      path: /actuator/prometheus
+      interval: 15s

@@ -16,7 +16,12 @@ spec:
     spec:
       containers:
         - name: hr-backend
-          image: hr-backend:0.1.0
+          image: tomfly2010/hr-backend:0.1.2
           imagePullPolicy: IfNotPresent   # important for local images
+          envFrom:
+            - configMapRef:
+                name: hr-backend-config
+            - secretRef:
+                name: hr-backend-secret
           ports:
             - containerPort: 8080
