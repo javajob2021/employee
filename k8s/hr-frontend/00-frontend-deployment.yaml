@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hr-frontend
+  namespace: hr-system
+  labels: { app: hr-frontend }
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app: hr-frontend }
+  template:
+    metadata:
+      labels: { app: hr-frontend }
+    spec:
+      containers:
+        - name: hr-frontend
+          # replace with your image name/tag
+          image: tomfly2010/hr-frontend:0.1.0
+          ports:
+            - containerPort: 80
+          readinessProbe:
+            httpGet: { path: /, port: 80 }
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          livenessProbe:
+            httpGet: { path: /, port: 80 }
+            initialDelaySeconds: 15
+            periodSeconds: 10
