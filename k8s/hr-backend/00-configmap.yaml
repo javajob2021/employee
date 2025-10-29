@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: hr-backend-config
+  namespace: hr-system
+  labels:
+    app: hr-backend
+    app.kubernetes.io/name: hr-backend
+    app.kubernetes.io/part-of: hr-system
+data:
+  SPRING_PROFILES_ACTIVE: "prod"
+  DB_HOST: "mysql.hr-system.svc.cluster.local"
+  DB_NAME: "hrdb"
+  DB_USER: "hr"
+  MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: "health,info,prometheus"
+  # Optional: if your app supports a single URL instead of host/db vars
+  # SPRING_DATASOURCE_URL: "jdbc:mysql://mysql.hr-system.svc.cluster.local:3306/hrdb"
