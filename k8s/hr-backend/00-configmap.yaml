@@ -8,6 +8,7 @@ metadata:
     app.kubernetes.io/name: hr-backend
     app.kubernetes.io/part-of: hr-system
 data:
+  SERVER_SERVLET_CONTEXT_PATH: "/api"
   SPRING_PROFILES_ACTIVE: "prod"
   DB_HOST: "mysql.hr-system.svc.cluster.local"
   DB_NAME: "hrdb"
