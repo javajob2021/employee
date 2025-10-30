@@ -1,0 +1,11 @@
+apiVersion: metallb.io/v1beta1
+kind: IPAddressPool
+metadata:
+  name: ip-pool-monitoring
+  namespace: metallb-system
+  labels:
+    app: metallb
+    tier: monitoring
+spec:
+  addresses:
+    - 192.168.40.220-192.168.40.229  # outside router DHCP range

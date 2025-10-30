@@ -1,0 +1,11 @@
+apiVersion: metallb.io/v1beta1
+kind: IPAddressPool
+metadata:
+  name: ip-pool-main
+  namespace: metallb-system
+  labels:
+    app: metallb
+    tier: main
+spec:
+  addresses:
+    - 192.168.40.200-192.168.40.212   # outside your router’s DHCP range

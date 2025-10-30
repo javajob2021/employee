@@ -1,0 +1,5 @@
+resources:
+  - pools/ip-pool-main.yaml
+  - pools/ip-pool-monitoring.yaml
+  - l2adverts/l2adv-main.yaml
+  - l2adverts/l2adv-monitoring.yaml
