@@ -1,4 +1,3 @@
-# k8s/ingress/00-hr-ingress.yaml
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
@@ -12,13 +11,13 @@ spec:
   - host: hr.localtest.me
     http:
       paths:
-      - path: /
+      - path: /actuator
         pathType: Prefix
         backend:
           service:
-            name: hr-frontend
+            name: hr-backend
             port:
-              number: 80
+              number: 8080
       - path: /api
         pathType: Prefix
         backend:
@@ -26,3 +25,10 @@ spec:
             name: hr-backend
             port:
               number: 8080
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: hr-frontend
+            port:
+              number: 80
