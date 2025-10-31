@@ -25,16 +25,20 @@ spec:
                 name: hr-backend-config
             - secretRef:
                 name: hr-backend-secret
-          # (optional but recommended)
           readinessProbe:
             httpGet:
-              path: /api/actuator/health/readiness
+              # after removing SERVER_SERVLET_CONTEXT_PATH, probes must drop the /api prefix
+              path: /actuator/health/readiness
               port: 8080
             initialDelaySeconds: 10
             periodSeconds: 5
+            timeoutSeconds: 2
+            failureThreshold: 6
           livenessProbe:
             httpGet:
-              path: /api/actuator/health/liveness
+              path: /actuator/health/liveness
               port: 8080
             initialDelaySeconds: 30
             periodSeconds: 10
+            timeoutSeconds: 2
+            failureThreshold: 3
