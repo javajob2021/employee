@@ -1,17 +1,18 @@
-# hr-backend-servicemonitor.yaml
+# k8s/hr-backend/04-hr-backend-servicemonitor.yaml
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
   name: hr-backend
   namespace: monitoring
+  labels:
+    release: kube-prometheus      # <-- add this label
 spec:
   selector:
     matchLabels:
-      app: hr-backend          # <-- must match labels on the hr-backend Service
+      app: hr-backend             # <-- must match labels on the *Service*
   namespaceSelector:
-    matchNames:
-      - hr-system              # <-- where your hr-backend Service lives
+    matchNames: [hr-system]       # <-- where the Service lives
   endpoints:
-    - port: http               # <-- must match the Service port name (not number)
+    - port: http                  # <-- must match the *name* of the Service port
       path: /actuator/prometheus
       interval: 15s
