@@ -1,0 +1,4 @@
+resources:
+  - 02-service.yaml
+  - 03-deployment.yaml
+  - 04-hr-backend-servicemonitor.yaml

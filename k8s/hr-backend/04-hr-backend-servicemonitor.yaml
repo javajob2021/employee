@@ -1,0 +1,17 @@
+# hr-backend-servicemonitor.yaml
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: hr-backend
+  namespace: monitoring
+spec:
+  selector:
+    matchLabels:
+      app: hr-backend          # <-- must match labels on the hr-backend Service
+  namespaceSelector:
+    matchNames:
+      - hr-system              # <-- where your hr-backend Service lives
+  endpoints:
+    - port: http               # <-- must match the Service port name (not number)
+      path: /actuator/prometheus
+      interval: 15s
