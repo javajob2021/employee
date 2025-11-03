@@ -1,4 +1,10 @@
+namespace: hr-system
+commonLabels:
+  app: hr-backend
+
 resources:
+  - 00-configmap.yaml
+  - 01-secret.yaml
   - 02-service.yaml
   - 03-deployment.yaml
   - 04-hr-backend-servicemonitor.yaml
