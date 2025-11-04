@@ -60,37 +60,48 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-  # Optional: auto-deploy to your Ubuntu staging cluster after pushing images.
-  # Add a repo secret named KUBECONFIG_BASE64 that contains your kubeconfig file, base64-encoded.
+  # Optional: Deploy to your Ubuntu staging cluster after pushing images.
+  # NOTE: Do NOT use "if: ${{ secrets... }}" at the job level. Instead,
+  #       map the secret into env and gate steps individually.
   deploy-staging:
     name: Deploy to staging (Ubuntu)
     needs: build
     runs-on: ubuntu-latest
-    if: ${{ secrets.KUBECONFIG_BASE64}}
     env:
+      KUBECONFIG_BASE64: ${{ secrets.KUBECONFIG_BASE64 }}
       NAMESPACE: hr-system
       REGISTRY: docker.io
       IMAGE_OWNER: ${{ secrets.DOCKER_USERNAME }}
       BACKEND_IMAGE: hr-backend
       FRONTEND_IMAGE: hr-frontend
     steps:
-      - name: Create kubeconfig from secret
+      - name: Abort (no kubeconfig provided)
+        if: ${{ !env.KUBECONFIG_BASE64 }}
         run: |
-          echo "${{ secrets.KUBECONFIG_BASE64 }}" | base64 -d > $HOME/.kubeconfig
+          echo "KUBECONFIG_BASE64 is not set. Skipping staging deploy."
+          exit 0
+
+      - name: Create kubeconfig from secret
+        if: ${{ env.KUBECONFIG_BASE64 }}
+        run: |
+          echo "${KUBECONFIG_BASE64}" | base64 -d > $HOME/.kubeconfig
           echo "KUBECONFIG=$HOME/.kubeconfig" >> $GITHUB_ENV
 
       - name: Install kubectl
+        if: ${{ env.KUBECONFIG_BASE64 }}
         run: |
           curl -L https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl -o kubectl
           chmod +x kubectl
           sudo mv kubectl /usr/local/bin/kubectl
 
       - name: Set backend image to :main and rollout
+        if: ${{ env.KUBECONFIG_BASE64 }}
         run: |
           kubectl --kubeconfig "$HOME/.kubeconfig" -n $NAMESPACE set image deployment/${BACKEND_IMAGE} ${BACKEND_IMAGE}=${REGISTRY}/${IMAGE_OWNER}/${BACKEND_IMAGE}:main
           kubectl --kubeconfig "$HOME/.kubeconfig" -n $NAMESPACE rollout status deployment/${BACKEND_IMAGE} --timeout=120s
 
       - name: Set frontend image to :main and rollout
+        if: ${{ env.KUBECONFIG_BASE64 }}
         run: |
           kubectl --kubeconfig "$HOME/.kubeconfig" -n $NAMESPACE set image deployment/${FRONTEND_IMAGE} ${FRONTEND_IMAGE}=${REGISTRY}/${IMAGE_OWNER}/${FRONTEND_IMAGE}:main
           kubectl --kubeconfig "$HOME/.kubeconfig" -n $NAMESPACE rollout status deployment/${FRONTEND_IMAGE} --timeout=120s
