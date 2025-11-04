@@ -1,0 +1,22 @@
+# --- Build outputs ---
+/target/
+/out/
+/build/
+
+# --- IDE / Tools ---
+.idea/
+*.iml
+.vscode/
+*.class
+*.log
+
+# --- Maven wrappers / temporary files ---
+.mvn/
+!/.mvn/wrapper/maven-wrapper.jar
+mvnw*
+mvnw.cmd
+
+# --- OS & misc ---
+.DS_Store
+*.swp
+*~

@@ -4,6 +4,19 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 
+### hr backend ###
+/hr-backend/target/
+/hr-backend/.mvn/
+/hr-backend/.idea
+*.class
+*.log
+
+### Node/Angular frontend ###
+/hr-frontend/node_modules/
+/hr-frontend/dist/
+/hr-frontend/.angular/cache/
+
+
 ### STS ###
 .apt_generated
 .classpath
