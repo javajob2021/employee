@@ -3,9 +3,6 @@ name: CI (Build & Push Docker Images)
 on:
   push:
     branches: [ "main" ]
-  # optional: build on release tags too
-  # tags:
-  #   - 'v*'
 
 env:
   REGISTRY: docker.io
@@ -22,6 +19,10 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Compute short SHA
+        id: vars
+        run: echo "short_sha=${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -45,7 +46,7 @@ jobs:
           platforms: linux/amd64
           tags: |
             ${{ env.REGISTRY }}/${{ env.IMAGE_OWNER }}/${{ env.BACKEND_IMAGE }}:${{ github.sha }}
-            ${{ env.REGISTRY }}/${{ env.IMAGE_OWNER }}/${{ env.BACKEND_IMAGE }}:${{ github.sha::7 }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_OWNER }}/${{ env.BACKEND_IMAGE }}:${{ steps.vars.outputs.short_sha }}
             ${{ env.REGISTRY }}/${{ env.IMAGE_OWNER }}/${{ env.BACKEND_IMAGE }}:staging-latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
@@ -60,7 +61,7 @@ jobs:
           platforms: linux/amd64
           tags: |
             ${{ env.REGISTRY }}/${{ env.IMAGE_OWNER }}/${{ env.FRONTEND_IMAGE }}:${{ github.sha }}
-            ${{ env.REGISTRY }}/${{ env.IMAGE_OWNER }}/${{ env.FRONTEND_IMAGE }}:${{ github.sha::7 }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_OWNER }}/${{ env.FRONTEND_IMAGE }}:${{ steps.vars.outputs.short_sha }}
             ${{ env.REGISTRY }}/${{ env.IMAGE_OWNER }}/${{ env.FRONTEND_IMAGE }}:staging-latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
