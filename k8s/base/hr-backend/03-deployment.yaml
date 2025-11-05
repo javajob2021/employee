@@ -2,43 +2,23 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: hr-backend
-  namespace: hr-system
-  labels:
-    app: hr-backend
+  labels: { app: hr-backend }
 spec:
-  replicas: 1
   selector:
-    matchLabels:
-      app: hr-backend
+    matchLabels: { app: hr-backend }
   template:
     metadata:
-      labels:
-        app: hr-backend
+      labels: { app: hr-backend }
     spec:
       containers:
         - name: hr-backend
           image: tomfly2010/hr-backend:latest
+          imagePullPolicy: IfNotPresent
+          envFrom:
+            - secretRef:
+                name: hr-backend-secrets   # generated in overlay
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: staging              # overridden in prod overlay
           ports:
             - containerPort: 8080
-          envFrom:
-            - configMapRef:
-                name: hr-backend-config
-            - secretRef:
-                name: hr-backend-secret
-          readinessProbe:
-            httpGet:
-              # after removing SERVER_SERVLET_CONTEXT_PATH, probes must drop the /api prefix
-              path: /actuator/health/readiness
-              port: 8080
-            initialDelaySeconds: 10
-            periodSeconds: 5
-            timeoutSeconds: 2
-            failureThreshold: 6
-          livenessProbe:
-            httpGet:
-              path: /actuator/health/liveness
-              port: 8080
-            initialDelaySeconds: 30
-            periodSeconds: 10
-            timeoutSeconds: 2
-            failureThreshold: 3
