@@ -1,0 +1,11 @@
+# k8s/overlays/prod/kustomization.yaml
+resources:
+  - ../../base
+
+images:
+  - name: docker.io/tomfly2010/hr-frontend
+    newTag: abcdef1  # <- pin to a specific build
+
+# (Optional) prod-only hardening patches
+patchesStrategicMerge:
+  - patch-frontend-deploy.yaml

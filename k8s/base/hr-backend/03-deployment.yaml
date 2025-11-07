@@ -2,23 +2,46 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: hr-backend
-  labels: { app: hr-backend }
+  namespace: hr-system
 spec:
+  replicas: 1
   selector:
-    matchLabels: { app: hr-backend }
+    matchLabels:
+      app: hr-backend
   template:
     metadata:
-      labels: { app: hr-backend }
+      labels:
+        app: hr-backend
     spec:
       containers:
         - name: hr-backend
-          image: tomfly2010/hr-backend:latest
-          imagePullPolicy: IfNotPresent
-          envFrom:
-            - secretRef:
-                name: hr-backend-secrets   # generated in overlay
-          env:
-            - name: SPRING_PROFILES_ACTIVE
-              value: staging              # overridden in prod overlay
+          image: docker.io/tomfly2010/hr-backend:staging-latest
           ports:
             - containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: hr-backend-config
+            - secretRef:
+                name: hr-backend-secrets
+          # ✅ security context for this container
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 10001
+            runAsGroup: 10001
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8080
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8080

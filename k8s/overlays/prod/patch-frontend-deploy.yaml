@@ -1,0 +1,12 @@
+# k8s/overlays/prod/patch-frontend-deploy.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hr-frontend
+  namespace: hr-system
+spec:
+  template:
+    spec:
+      containers:
+        - name: hr-frontend
+          imagePullPolicy: IfNotPresent

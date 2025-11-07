@@ -1,9 +1,18 @@
-HR App
+HR Platform on Azure Kubernetes Service (AKS): A Full-Stack Cloud-Native Demo
 
-A full-stack Human Resource management system built with Spring Boot 3, Angular 17, and MySQL, containerized with Docker and deployed to Kubernetes.
-This project demonstrates end-to-end DevOps practices — from local development to CI/CD and monitoring — using GitHub Actions, Prometheus, and Grafana.
+1. Overview
 
-Project Structure
+summary: “This project demonstrates a full-stack HR system built with Spring Boot 3, Angular 17, and MySQL 8, deployed on Azure Kubernetes Service using GitHub Actions, Argo CD, and Terraform for infrastructure automation.”
+
+2. Objectives
+
+Modernize a monolithic HR web app into a cloud-native microservice.
+
+Build production-ready CI/CD pipelines.
+
+Enable observability (metrics, logs, alerts) and secure configurations.
+
+3. Project Structure
 hr-backend
 hr-frontend
 infra/
@@ -28,3 +37,4 @@ k8s/
     dev/
     staging/
     prod/
+
